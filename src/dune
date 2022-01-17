@@ -1,0 +1,6 @@
+(library
+ (name geo)
+ (libraries owl-base))
+
+(documentation
+ (package geo))

@@ -1,2 +1,3 @@
 # owl-geo
-Geospatial primitives and algorithms using Owl
+
+Geospatial primitives and algorithms in pure OCaml using Owl.
