@@ -1,6 +1,9 @@
 (library
  (name geo)
+ (public_name geo)
  (libraries owl-base))
+
+(include_subdirs unqualified)
 
 (documentation
  (package geo))

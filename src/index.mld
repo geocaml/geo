@@ -1,6 +1,6 @@
 {1 Geospatial Primitives and Algorithms}
 
-The [Geo] library provides convenient algorithms and primitives for working 
+The {! Geo} library provides convenient algorithms and primitives for working 
 with geospatial data. It uses the scientific-computing library {{: https://ocaml.xyz/} Owl}
 with an identical runtime representation for all the primitives: [Owl_base_dense_ndarray_d.arr].
 

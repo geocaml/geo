@@ -1,12 +1,16 @@
+open Owl_base_dense_ndarray_d
 module G = Owl_base_dense_ndarray_generic
 
 type position = [ `position ]
 type point = [ `point ]
 type multipoint = [ `multipoint ]
 
-type _ t
-(** The type for primitives distinguished with a phantom type but all
-    represented identically. *)
+type _ t = private
+  | Point : arr -> [> point ] t
+  | Position : arr -> [> position ] t
+  | Multipoint : arr -> [> multipoint ] t
+      (** The type for primitives distinguished with a phantom type but all
+          represented identically. *)
 
 module type Conv = sig
   type t
@@ -50,7 +54,8 @@ module Point : sig
 end
 
 module Multipoint : sig
-  val get_points : multipoint t -> point t array
-end
+  val to_points : multipoint t -> point t array
+  val of_points : point t array -> multipoint t
 
-(* val length : [ point | multipoint ] t -> int *)
+  include Conv with type t := multipoint t
+end

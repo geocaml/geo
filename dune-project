@@ -1,7 +1,7 @@
 (lang dune 2.9)
 (name geo)
 (generate_opam_files true)
-(source (github patricoferris/owl-geo))
+(source (github patricoferris/ocaml-geo))
 (authors "patrick@sirref.org")
 (maintainers "patrick@sirref.org")
 (package
