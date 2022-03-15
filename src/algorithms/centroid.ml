@@ -1,1 +1,0 @@
-let centroid () = 1.

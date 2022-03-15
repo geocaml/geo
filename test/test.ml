@@ -26,4 +26,12 @@ module Test_prim = struct
     ]
 end
 
+module Algos = struct
+  open Geo
+
+  let centroid () =
+    let point = Geo.Point.create ~lng:3.0 ~lat:3.0 () in
+    Algo.centroid point
+end
+
 let () = Alcotest.run "geo" [ ("primitives", Test_prim.tests) ]

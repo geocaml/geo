@@ -4,11 +4,13 @@ synopsis: "Geospatial Primitives and Algorithms"
 description: ""
 maintainer: ["patrick@sirref.org"]
 authors: ["patrick@sirref.org"]
-homepage: "https://github.com/patricoferris/owl-geo"
-bug-reports: "https://github.com/patricoferris/owl-geo/issues"
+homepage: "https://github.com/geocaml/geo"
+bug-reports: "https://github.com/geocaml/geo/issues"
 depends: [
   "dune" {>= "2.9"}
   "owl-base"
+  "mdx" {with-test}
+  "alcotest" {with-test}
   "odoc" {with-doc}
 ]
 build: [
@@ -27,4 +29,4 @@ build: [
   ]
   ["dune" "install" "-p" name "--create-install-files" name]
 ]
-dev-repo: "git+https://github.com/patricoferris/owl-geo.git"
+dev-repo: "git+https://github.com/geocaml/geo.git"
