@@ -1,63 +1,119 @@
 open Owl_base_dense_ndarray_d
 module G = Owl_base_dense_ndarray_generic
 
-type position = [ `position ]
-type point = [ `point ]
-type multipoint = [ `multipoint ]
-
-type _ t =
-  | Point : arr -> [> point ] t
-  | Position : arr -> [> position ] t
-  | Multipoint : arr -> [> multipoint ] t
-      (** The type for primitives distinguished with a phantom type but all
-          represented identically. *)
-
 module type Conv = sig
   type t
 
-  val of_arr : Owl_base_dense_ndarray_d.arr -> t
-  (** Construct a {!t} from an array.
-
-      @raise [Invalid_arg]
-        if the array is not suitable (e.g. too many dimensions) *)
-
-  val to_arr : t -> Owl_base_dense_ndarray_d.arr
-  (** Convert a {!t} to an array, this will always succeed. *)
+  val to_arr : t -> arr
+  val of_arr : arr -> t
 end
 
 module type Intf = sig
   module Position : sig
-    val create : ?alt:float -> lng:float -> lat:float -> unit -> [> position ] t
-    (** [create ?alt ~lng ~lat ()] creates a new position with the given
-        longitude and latitude. Optionally it will have an altitude. *)
+    type t
+    (** A position - a longitude and latitude with an optional altitude *)
 
-    val lng : position t -> float
-    (** Get the longitude of a position. *)
+    val lng : t -> float
+    (** The longitude value of the position *)
 
-    val lat : position t -> float
-    (** Get the latitiude of a position. *)
+    val lat : t -> float
+    (** The latitude value of the position *)
 
-    val alt : position t -> float option
-    (** Get the altitude of a position if it has one. *)
+    val alt : t -> float option
+    (** Optional altitude/elevation value of the position *)
 
-    include Conv with type t := position t
+    val create : ?alt:float -> lng:float -> lat:float -> unit -> t
+    (** A position constructor *)
+
+    include Conv with type t := t
   end
 
   module Point : sig
-    val create : ?alt:float -> lng:float -> lat:float -> unit -> [> point ] t
-    (** [create ?alt ~lng ~lat ()] creates a new position with the given
-        longitude and latitude. Optionally it will have an altitude. *)
+    type t
+    (** A point is a single {!Position.t} *)
 
-    val to_position : point t -> position t
-    (** Convert a point to a position. *)
+    val to_position : t -> Position.t
+    (** Convert a point to a position *)
 
-    include Conv with type t := point t
+    val create : Position.t -> t
+    (** Create a point from a position. *)
+
+    include Conv with type t := t
   end
 
-  module Multipoint : sig
-    val to_points : multipoint t -> point t array
-    val of_points : point t array -> multipoint t
+  module MultiPoint : sig
+    type t
+    (** A multipoint is an array of positions. *)
 
-    include Conv with type t := multipoint t
+    val coordinates : t -> Position.t array
+    (** Get the positions that make up this multipoint object. *)
+
+    val create : Position.t array -> t
+    (** Create a multipoint object from an array of positions. *)
+
+    include Conv with type t := t
   end
+
+  module LineString : sig
+    type t
+    (** A line string is two or more points *)
+
+    val coordinates : t -> Position.t array
+    (** Convert the line into a position array *)
+
+    val create : Position.t array -> t
+    (** Create a line string from positions, will raise [Invalid_argument] if
+        the array doesn't have at least two positions. *)
+
+    include Conv with type t := t
+  end
+
+  module MultiLineString : sig
+    type t
+    (** A collection of line strings *)
+
+    val lines : t -> LineString.t array
+    (** Access the lines *)
+
+    val create : LineString.t array -> t
+    (** Create a multiline string *)
+
+    include Conv with type t := t
+  end
+
+  module Polygon : sig
+    type t
+    (** A close loop with optional rings *)
+
+    val interior_rings : t -> LineString.t array
+    val exterior_ring : t -> LineString.t
+
+    val create : LineString.t array -> t
+    (** Create a polygon object from an array of close line strings (note no
+        checking is down here to ensure the loops are indeed closed.) *)
+
+    include Conv with type t := t
+  end
+
+  module MultiPolygon : sig
+    type t
+    (** A multi-polygon object *)
+
+    val polygons : t -> Polygon.t array
+    (** Access the polygons *)
+
+    val create : Polygon.t array -> t
+    (** Create a multi-polygon object from an array of {!Polygon.t}s *)
+
+    include Conv with type t := t
+  end
+
+  type t =
+    | Point of Point.t
+    | MultiPoint of MultiPoint.t
+    | LineString of LineString.t
+    | MultiLineString of MultiLineString.t
+    | Polygon of Polygon.t
+    | MultiPolygon of MultiPolygon.t
+    | Collection of t list
 end

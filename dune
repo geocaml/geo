@@ -1,0 +1,4 @@
+(mdx
+ (packages geo)
+ (preludes docs/prelude.mlx)
+ (files README.md))

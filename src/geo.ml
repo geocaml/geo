@@ -2,12 +2,11 @@ open Owl_base_dense_ndarray_d
 include Geo_intf
 
 module Position = struct
-  let lng : position t -> elt = fun (Position t) -> get t [| 0 |]
-  let lat : position t -> elt = fun (Position t) -> get t [| 1 |]
+  type t = arr
 
-  let alt : position t -> elt option =
-   fun (Position t) ->
-    try Some (get t [| 2 |]) with Invalid_argument _ -> None
+  let lng t = get t [| 0 |]
+  let lat t = get t [| 1 |]
+  let alt t = try Some (get t [| 2 |]) with Invalid_argument _ -> None
 
   let create_point ?alt ~lng ~lat () =
     match alt with
@@ -23,10 +22,10 @@ module Position = struct
         set arr [| 1 |] lat;
         arr
 
-  let create ?alt ~lng ~lat () = Position (create_point ?alt ~lng ~lat ())
-  let to_arr : [< position ] t -> arr = fun (Position t) -> t
+  let create ?alt ~lng ~lat () = create_point ?alt ~lng ~lat ()
+  let to_arr = Fun.id
 
-  let _of_arr arr =
+  let of_arr' arr =
     let ndim = G.num_dims arr in
     if ndim <> 1 then invalid_arg "Wrong number of dimensions";
     match G.nth_dim arr 0 with
@@ -42,29 +41,107 @@ module Position = struct
           ("Wrong number of elements, expected 2 or 3 but got "
           ^ string_of_int n)
 
-  let of_arr arr = Position (_of_arr arr)
+  let of_arr arr = of_arr' arr
 end
 
 module Point = struct
-  let create ?alt ~lng ~lat () = Point (Position.create_point ?alt ~lng ~lat ())
-  let to_position : point t -> position t = fun (Point arr) -> Position arr
-  let to_arr : point t -> arr = fun (Point arr) -> arr
-  let of_arr arr = Point (Position._of_arr arr)
+  type t = arr
+
+  let create = Fun.id
+  let to_position = Fun.id
+  let to_arr = Fun.id
+  let of_arr = Fun.id
 end
 
-module Multipoint = struct
-  let to_points : multipoint t -> point t array =
-   fun (Multipoint t) ->
+module MultiPoint = struct
+  type t = arr
+
+  let coordinates t =
     let num_points = G.nth_dim t 0 in
-    Array.map (fun arr -> Point arr) @@ Utils.sub_ndarray [| num_points |] t
+    Utils.sub_ndarray [| num_points |] t
 
-  let of_points : point t array -> multipoint t =
-   fun t ->
+  let create t =
     let arr_arr = Array.map Point.to_arr t in
-    Multipoint (Owl_base_dense_ndarray_d.of_rows arr_arr)
+    Owl_base_dense_ndarray_d.of_rows arr_arr
 
-  let to_arr : multipoint t -> arr = fun (Multipoint arr) -> arr
-  let of_arr arr = Multipoint arr
+  let to_arr = Fun.id
+  let of_arr = Fun.id
 end
 
-module Algo = Algo
+module LineString = struct
+  type t = arr
+
+  let coordinates t =
+    let num_points = G.nth_dim t 0 in
+    Utils.sub_ndarray [| num_points |] t
+
+  let create t =
+    let arr_arr = Array.map Point.to_arr t in
+    Owl_base_dense_ndarray_d.of_rows arr_arr
+
+  let to_arr = Fun.id
+  let of_arr = Fun.id
+end
+
+module MultiLineString = struct
+  type t = arr
+
+  let lines t =
+    let num_points = G.nth_dim t 0 in
+    Utils.sub_ndarray [| num_points |] t
+
+  let create t =
+    let arr_arr = Array.map Point.to_arr t in
+    Owl_base_dense_ndarray_d.of_rows arr_arr
+
+  let to_arr = Fun.id
+  let of_arr = Fun.id
+end
+
+module Polygon = struct
+  type t = arr
+
+  let exterior_ring t = (split [| 1 |] t).(0) |> LineString.of_arr
+
+  let interior_rings t =
+    let num_rings = G.nth_dim t 0 in
+    print_int num_rings;
+    if num_rings > 1 then
+      (split [| 1; num_rings - 1 |] t).(1)
+      |> MultiLineString.of_arr
+      |> MultiLineString.lines
+    else [||]
+
+  let create t =
+    let arr_arr = Array.map LineString.to_arr t in
+    Owl_base_dense_ndarray_d.of_rows arr_arr
+
+  let to_arr = Fun.id
+  let of_arr = Fun.id
+end
+
+module MultiPolygon = struct
+  type t = arr
+
+  let polygons t =
+    let num_points = G.nth_dim t 0 in
+    Utils.sub_ndarray [| num_points |] t
+
+  let create t =
+    let arr_arr = Array.map Point.to_arr t in
+    Owl_base_dense_ndarray_d.of_rows arr_arr
+
+  let to_arr = Fun.id
+  let of_arr = Fun.id
+end
+
+type t =
+  | Point of Point.t
+  | MultiPoint of MultiPoint.t
+  | LineString of LineString.t
+  | MultiLineString of MultiLineString.t
+  | Polygon of Polygon.t
+  | MultiPolygon of MultiPolygon.t
+  | Collection of t list
+
+(* module Algo = Algo *)
