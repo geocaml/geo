@@ -1,18 +1,28 @@
 geo
 ---
 
-Geospatial primitives and algorithms in pure OCaml using [Owl](https://github.com/owlbarn/owl). This library acts as a basis for all other libraries that need geospatial primitives as part of the [geocaml organisation](https://github.com/geocaml).
+*Status: Very WIP & will likely change!*
+
+Geospatial primitives and algorithms in pure OCaml using [Owl](https://github.com/owlbarn/owl). This library provides some basic geospatial primitives as part of the [geocaml organisation](https://github.com/geocaml).
 
 ```ocaml
 # open Geo;;
-# let p1 = Position.create ~lat:1.0 ~lng:2.0 ();;
-val p1 : Position.t = <abstr>
-# let p2 = Position.create ~lat:2.0 ~lng:2.0 ();;
-val p2 : Position.t = <abstr>
-# LineString.create [| p1; p2 |] |> LineString.to_arr;;
+# let p1 = Coordinate.create ~x:2.0 ~y:1.0;;
+val p1 : Coordinate.t = <abstr>
+# let p2 = Coordinate.create ~x:2.0 ~y:2.0;;
+val p2 : Coordinate.t = <abstr>
+# let p3 = Coordinate.create ~x:3.0 ~y:2.0;;
+val p3 : Coordinate.t = <abstr>
+# let l = LineString.create [| p1; p2; p3 |];;
+val l : LineString.t = <abstr>
+# LineString.chaikin_smoothing 1 l |> LineString.to_arr;;
 - : Owl_base_dense_ndarray_d.arr =
 
-   C0 C1
-R0  2  1
-R1  2  2
+     C0   C1
+R0    2    1
+R1    2 1.25
+R2    2 1.75
+R3 2.25    2
+R4 2.75    2
+R5    3    2
 ```

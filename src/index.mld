@@ -4,3 +4,5 @@ The {! Geo} library provides convenient algorithms and primitives for working
 with geospatial data. It uses the scientific-computing library {{: https://ocaml.xyz/} Owl}
 with an identical runtime representation for all the primitives: [Owl_base_dense_ndarray_d.arr].
 
+Every primitive can be converted to [Owl_base_dense_ndarray_d.arr] and will look as you might expect.
+For example a {! Coordinate.t} will be an array with one row and two or three colums (depending on the coordinate system).

@@ -5,17 +5,23 @@ let arr = Alcotest.testable Owl_pretty.pp_dsnda Floatarr.equal
 
 module Test_prim = struct
   let creation () =
-    let point = Point.create @@ Position.create ~lng:3.0 ~lat:3.0 () in
+    let point = Point.create @@ Coordinate.create ~x:3.0 ~y:3.0 in
     let point_arr = Point.to_arr point in
     let expect = Floatarr.create [| 2 |] 3.0 in
     Alcotest.(check arr "same ndarray" point_arr expect)
 
   let multipoints () =
-    let p1 = Position.create ~lng:1.0 ~lat:3.0 () in
-    let p2 = Position.create ~lng:2.0 ~lat:3.0 () in
-    let p3 = Position.create ~lng:3.0 ~lat:3.0 () in
-    let mp = MultiPoint.create [| p1; p2; p3 |] in
-    let mp' = MultiPoint.coordinates mp |> MultiPoint.create in
+    let p1 = Coordinate.create ~x:1.0 ~y:3.0 in
+    let p2 = Coordinate.create ~x:2.0 ~y:3.0 in
+    let p3 = Coordinate.create ~x:3.0 ~y:3.0 in
+    let coords = [| p1; p2; p3 |] in
+    let mp = MultiPoint.create coords in
+    let coords' = MultiPoint.coordinates mp in
+    let mp' = MultiPoint.create coords' in
+    Alcotest.(
+      check (array arr) "same coordinates"
+        (Array.map Coordinate.to_arr coords)
+        (Array.map Coordinate.to_arr coords'));
     Alcotest.(
       check arr "same multipoints" (MultiPoint.to_arr mp) (MultiPoint.to_arr mp));
     Alcotest.(
@@ -23,9 +29,9 @@ module Test_prim = struct
         (MultiPoint.to_arr mp'))
 
   let linestring () =
-    let p1 = Position.create ~lng:1.0 ~lat:3.0 () in
-    let p2 = Position.create ~lng:2.0 ~lat:3.0 () in
-    let p3 = Position.create ~lng:3.0 ~lat:3.0 () in
+    let p1 = Coordinate.create ~x:1.0 ~y:3.0 in
+    let p2 = Coordinate.create ~x:2.0 ~y:3.0 in
+    let p3 = Coordinate.create ~x:3.0 ~y:3.0 in
     let mp = LineString.create [| p1; p2; p3 |] in
     let mp' = LineString.coordinates mp |> LineString.create in
     Alcotest.(
@@ -33,13 +39,42 @@ module Test_prim = struct
     Alcotest.(
       check arr "same linestring" (LineString.to_arr mp) (LineString.to_arr mp'))
 
+  let multilinestring () =
+    let p1 = Coordinate.create ~x:1.0 ~y:3.0 in
+    let p2 = Coordinate.create ~x:2.0 ~y:3.0 in
+    let p3 = Coordinate.create ~x:3.0 ~y:3.0 in
+    let l1 = LineString.create [| p1; p2; p3 |] in
+    let l2 = LineString.create [| p1; p2; p3; p2; p1 |] in
+    let ml = MultiLineString.create [| l1; l2 |] in
+    let ml' =
+      MultiLineString.create
+      @@ [|
+           LineString.of_arr
+             (Floatarr.of_arrays
+                [| [| 1.0; 3.0 |]; [| 2.0; 3.0 |]; [| 3.0; 3.0 |] |]);
+           LineString.of_arr
+             (Floatarr.of_arrays
+                [|
+                  [| 1.0; 3.0 |];
+                  [| 2.0; 3.0 |];
+                  [| 3.0; 3.0 |];
+                  [| 2.0; 3.0 |];
+                  [| 1.0; 3.0 |];
+                |]);
+         |]
+    in
+    Alcotest.(
+      check (array arr) "same multilinestring"
+        (MultiLineString.lines ml |> Array.map LineString.to_arr)
+        (MultiLineString.lines ml' |> Array.map LineString.to_arr))
+
   let polygons () =
-    let p1 = Position.create ~lng:1.0 ~lat:3.0 () in
-    let p2 = Position.create ~lng:2.0 ~lat:3.0 () in
-    let p3 = Position.create ~lng:3.0 ~lat:3.0 () in
-    let i_p1 = Position.create ~lng:0.5 ~lat:1.5 () in
-    let i_p2 = Position.create ~lng:1.0 ~lat:1.5 () in
-    let i_p3 = Position.create ~lng:1.5 ~lat:1.5 () in
+    let p1 = Coordinate.create ~x:1.0 ~y:3.0 in
+    let p2 = Coordinate.create ~x:2.0 ~y:3.0 in
+    let p3 = Coordinate.create ~x:3.0 ~y:3.0 in
+    let i_p1 = Coordinate.create ~x:0.5 ~y:1.5 in
+    let i_p2 = Coordinate.create ~x:1.0 ~y:1.5 in
+    let i_p3 = Coordinate.create ~x:1.5 ~y:1.5 in
     let l1 = LineString.create [| p1; p2; p3; p1 |] in
     let l2 = LineString.create [| i_p1; i_p2; i_p3; i_p1 |] in
     let p = Polygon.create [| l1 |] in
@@ -54,7 +89,10 @@ module Test_prim = struct
              [| exterior_ring p_with_interior |]
              (interior_rings p_with_interior)))
     in
-    Alcotest.(check arr "same polygon" (Polygon.to_arr p) (Polygon.to_arr p'));
+    Alcotest.(
+      check (array arr) "same polygon"
+        (Polygon.rings p |> Array.map LineString.to_arr)
+        (Polygon.rings p' |> Array.map LineString.to_arr));
     Alcotest.(
       check arr "same exterior 1" (LineString.to_arr l1) (LineString.to_arr er));
     Alcotest.(
@@ -65,25 +103,20 @@ module Test_prim = struct
         [| LineString.to_arr l2 |]
         (Array.map LineString.to_arr (Polygon.interior_rings p_with_interior)));
     Alcotest.(
-      check arr "same polygon (with interior)"
-        (Polygon.to_arr p_with_interior)
-        (Polygon.to_arr ip'))
+      check (array arr) "same polygon (with interior)"
+        (Polygon.rings p_with_interior |> Array.map LineString.to_arr)
+        (Polygon.rings ip' |> Array.map LineString.to_arr))
 
   let tests =
     [
       Alcotest.test_case "point" `Quick creation;
       Alcotest.test_case "multipoints" `Quick multipoints;
       Alcotest.test_case "linestring" `Quick linestring;
+      Alcotest.test_case "multilinestring" `Quick multilinestring;
       Alcotest.test_case "polygon" `Quick polygons;
     ]
 end
 
-module Algos = struct
-  (* open Geo *)
-
-  (* let centroid () =
-     let point = Po.create ~lng:3.0 ~lat:3.0 () in
-     Algo.centroid point *)
-end
-
-let () = Alcotest.run "geo" [ ("primitives", Test_prim.tests) ]
+let () =
+  Alcotest.run "geo"
+    [ ("primitives", Test_prim.tests); ("algorithms", Test_algos.tests) ]

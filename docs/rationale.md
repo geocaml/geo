@@ -1,5 +1,7 @@
 # Design Rationale
 
+*OUTDATED*
+
 Ultimately the geospatial primitives are multi-dimensional arrays of floats. In OCaml a good candidate for this is the `Bigarray` module and in particular those provided by the excellent numerical library, [Owl](https://github.com/owlbarn/owl).
 
 Another natural desire is to minimise the amount of data allocated by the OCaml runtime. This can happen when using non-constant variant constructions (like `Some x`), records, arrays etc. At the same time, the user experience shouldn't be compromised in favour of small performance gains (at least in the beginning when building the library). This short document shows some examples of how the geospatial primitives ended up in the format they are. A big thanks to [CraigFe](https://www.craigfe.io/) for his valuable input. If you see any mistakes or know how to make the interface better, please reach out.
@@ -29,7 +31,7 @@ At this point we now have our primitives and can build functions that must handl
 val to_arr : t -> Darray.arr = <fun>
 ```
 
-But what if we only want to have functions work only on a subset of the primitives, for example a function that calculates the `centroid` of a primitive? With this setup, we're not using an OCaml type system features that would allow us to encode this.
+But what if we only want to have functions work only on a subset of the primitives, for example a function that calcuyes the `centroid` of a primitive? With this setup, we're not using an OCaml type system features that would allow us to encode this.
 
 ```ocaml
 type point = [ `point ]
@@ -69,9 +71,9 @@ And now if we try to use a multipoint here we'll get a compile time error, unfor
 ```ocaml
 # f (Multipoint (Darray.zeros [| 2; 2|]));;
 Line 1, characters 3-40:
-Error: This expression has type ([> multipoint ] as 'a) t
+Error: This expression has type [> multipoint ] t
        but an expression was expected of type [ `point | `position ] t
-       Type 'a = [> `multipoint ] is not compatible with type
+       Type [> multipoint ] = [> `multipoint ] is not compatible with type
          [ `point | `position ]
        The second variant type does not allow tag(s) `multipoint
 ```

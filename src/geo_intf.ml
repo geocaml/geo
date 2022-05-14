@@ -9,33 +9,31 @@ module type Conv = sig
 end
 
 module type Intf = sig
-  module Position : sig
+  module Coordinate : sig
     type t
-    (** A position - a longitude and latitude with an optional altitude *)
+    (** A two-dimensional coordinate *)
 
-    val lng : t -> float
-    (** The longitude value of the position *)
+    val x : t -> float
+    (** The first coordinate *)
 
-    val lat : t -> float
-    (** The latitude value of the position *)
+    val y : t -> float
+    (** The second coordinate *)
 
-    val alt : t -> float option
-    (** Optional altitude/elevation value of the position *)
-
-    val create : ?alt:float -> lng:float -> lat:float -> unit -> t
-    (** A position constructor *)
+    val create : x:float -> y:float -> t
+    (** A coordinate constructor *)
 
     include Conv with type t := t
+    include Algo_intf.Chaikin_smoothing with type t := t * t
   end
 
   module Point : sig
     type t
-    (** A point is a single {!Position.t} *)
+    (** A point is a single {!Coordinate.t} *)
 
-    val to_position : t -> Position.t
+    val to_position : t -> Coordinate.t
     (** Convert a point to a position *)
 
-    val create : Position.t -> t
+    val create : Coordinate.t -> t
     (** Create a point from a position. *)
 
     include Conv with type t := t
@@ -45,10 +43,10 @@ module type Intf = sig
     type t
     (** A multipoint is an array of positions. *)
 
-    val coordinates : t -> Position.t array
+    val coordinates : t -> Coordinate.t array
     (** Get the positions that make up this multipoint object. *)
 
-    val create : Position.t array -> t
+    val create : Coordinate.t array -> t
     (** Create a multipoint object from an array of positions. *)
 
     include Conv with type t := t
@@ -58,14 +56,15 @@ module type Intf = sig
     type t
     (** A line string is two or more points *)
 
-    val coordinates : t -> Position.t array
+    val coordinates : t -> Coordinate.t array
     (** Convert the line into a position array *)
 
-    val create : Position.t array -> t
+    val create : Coordinate.t array -> t
     (** Create a line string from positions, will raise [Invalid_argument] if
         the array doesn't have at least two positions. *)
 
     include Conv with type t := t
+    include Algo_intf.Chaikin_smoothing with type t := t
   end
 
   module MultiLineString : sig
@@ -78,7 +77,7 @@ module type Intf = sig
     val create : LineString.t array -> t
     (** Create a multiline string *)
 
-    include Conv with type t := t
+    (* include Conv with type t := t *)
   end
 
   module Polygon : sig
@@ -87,12 +86,13 @@ module type Intf = sig
 
     val interior_rings : t -> LineString.t array
     val exterior_ring : t -> LineString.t
+    val rings : t -> LineString.t array
 
     val create : LineString.t array -> t
     (** Create a polygon object from an array of close line strings (note no
         checking is down here to ensure the loops are indeed closed.) *)
 
-    include Conv with type t := t
+    include Algo_intf.Chaikin_smoothing with type t := t
   end
 
   module MultiPolygon : sig
@@ -104,8 +104,6 @@ module type Intf = sig
 
     val create : Polygon.t array -> t
     (** Create a multi-polygon object from an array of {!Polygon.t}s *)
-
-    include Conv with type t := t
   end
 
   type t =
