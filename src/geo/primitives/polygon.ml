@@ -2,6 +2,7 @@ open Owl_base_dense_ndarray_d
 
 type t = arr Array.t
 
+let pp ppf (t : t) = Fmt.array Owl_pretty.pp_dsnda ppf t
 let exterior_ring t = t.(0)
 
 let interior_rings t =

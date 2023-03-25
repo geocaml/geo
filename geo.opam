@@ -7,7 +7,7 @@ authors: ["patrick@sirref.org"]
 homepage: "https://github.com/geocaml/geo"
 bug-reports: "https://github.com/geocaml/geo/issues"
 depends: [
-  "dune" {>= "2.9"}
+  "dune" {>= "3.2"}
   "owl-base"
   "mdx" {with-test}
   "alcotest" {with-test}
@@ -22,11 +22,15 @@ build: [
     name
     "-j"
     jobs
-    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
-  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/geocaml/geo.git"
+pin-depends: [
+    # Workaround for printers...
+    [ "mdx.dev" "git+https://github.com/patricoferris/mdx#e057effb41b6306864af5dfdc91fec31bf2a3d22" ]
+    # Fix min DP floating point...
+    [ "owl-base.dev" "git+https://github.com/patricoferris/owl#b231dcb961629837a1803abb82f87f8cbcd7e849"]
+]

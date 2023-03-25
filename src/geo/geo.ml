@@ -1,10 +1,11 @@
 open Owl_base_dense_ndarray_d
 include Geo_intf
-module Coordinate = Coordinate
+module Coord = Coord
 
 module Point = struct
   type t = arr
 
+  let pp ppf (t : t) = Owl_pretty.pp_dsnda ppf t
   let create = Fun.id
   let to_position = Fun.id
   let to_arr = Fun.id
@@ -15,6 +16,7 @@ module MultiPoint = MultiPoint
 module LineString = LineString
 module MultiLineString = MultiLineString
 module Polygon = Polygon
+module Rect = Rect
 module MultiPolygon = MultiPolygon
 
 type t =
@@ -23,7 +25,6 @@ type t =
   | LineString of LineString.t
   | MultiLineString of MultiLineString.t
   | Polygon of Polygon.t
+  | Rect of Rect.t
   | MultiPolygon of MultiPolygon.t
   | Collection of t list
-
-(* module Algo = Algo *)

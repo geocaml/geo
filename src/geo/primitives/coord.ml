@@ -2,8 +2,31 @@ open Owl_base_dense_ndarray_d
 
 type t = arr
 
+let pp ppf (t : t) = Owl_pretty.pp_dsnda ppf t
+let equal t1 t2 = equal t1 t2
 let x t = get t [| 0 |]
 let y t = get t [| 1 |]
+
+type orient = Counterclockwise | Clockwise | Collinear
+
+let pp_orient ppf = function
+  | Counterclockwise -> Fmt.pf ppf "counterclockwise"
+  | Clockwise -> Fmt.pf ppf "clockwise"
+  | Collinear -> Fmt.pf ppf "collinear"
+
+let orient coord1 coord2 coord3 =
+  let c1x, c1y = (x coord1, y coord1) in
+  let c2x, c2y = (x coord2, y coord2) in
+  let c3x, c3y = (x coord3, y coord3) in
+  (* Cross product essentially *)
+  let comp =
+    Float.compare
+      (((c2x -. c1x) *. (c3y -. c1y)) -. ((c2y -. c1y) *. (c3x -. c1x)))
+      0.
+  in
+  if comp < 0 then Clockwise
+  else if comp > 0 then Counterclockwise
+  else Collinear
 
 let create_point ~x ~y =
   let arr = zeros [| 2 |] in
@@ -24,7 +47,6 @@ let of_arr' arr =
         ("Wrong number of elements, expected 2 or 3 but got " ^ string_of_int n)
 
 let of_arr arr = of_arr' arr
-let equal = equal
 
 let chaikin_smoothing _i (t1, t2) =
   let p_ix = x t1 and p_iy = y t1 in

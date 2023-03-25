@@ -1,8 +1,0 @@
-#require "geo";;
-
-let pretty_print t =
-  Owl_pretty.pp_dsnda Format.str_formatter t;
-  print_string @@ Format.flush_str_formatter ()
-;;
-
-#install_printer pretty_print;;

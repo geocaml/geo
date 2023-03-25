@@ -1,4 +1,5 @@
 (mdx
- (packages geo)
- (preludes docs/prelude.mlx)
+ (libraries geo fmt compiler-libs.toplevel)
  (files README.md))
+
+(vendored_dirs owl)

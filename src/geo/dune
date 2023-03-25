@@ -1,7 +1,7 @@
 (library
  (name geo)
  (public_name geo)
- (libraries owl-base))
+ (libraries owl-base fmt))
 
 (include_subdirs unqualified)
 

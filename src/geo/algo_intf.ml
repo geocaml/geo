@@ -11,5 +11,5 @@ module type Chaikin_smoothing = sig
   (** Use the chaikin smoothing algorithm to smoothen a geometry. The [int]
       decides the number of iterations.
       {{:http://www.idav.ucdavis.edu/education/CAGDNotes/Chaikins-Algorithm/Chaikins-Algorithm.html}
-      See this explanation of the smoothing algorithm}. *)
+        See this explanation of the smoothing algorithm}. *)
 end
