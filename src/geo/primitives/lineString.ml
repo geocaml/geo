@@ -40,7 +40,7 @@ let intersect_segment (start_coord1, end_coord1) (start_coord2, end_coord2) =
       Fmt.pr "This case %b %b" (orient1_1 <> orient1_2) b;
       b
 
-let intersect l1 l2 =
+let intersects l1 l2 =
   let coords1 = coordinates l1 in
   let coords2 = coordinates l2 in
   let intersects = ref [] in

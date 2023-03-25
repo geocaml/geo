@@ -114,8 +114,8 @@ module type Intf = sig
     val bounding_box : t -> Rect.t
     (** The bounding box of the linestring. *)
 
-    val intersect : t -> t -> ((Coord.t * Coord.t) * (Coord.t * Coord.t)) list
-    (** [intersect l1 l2] looks to see if linestring [l1] intersects with
+    val intersects : t -> t -> ((Coord.t * Coord.t) * (Coord.t * Coord.t)) list
+    (** [intersects l1 l2] looks to see if linestring [l1] intersects with
         linestring [l2]. Linestrings may intersect multiple times. The result is
         a list of all of the line segments where an intersection occurs. If the
         list is empty then [l1] and [l2] do not intersect. *)
@@ -151,6 +151,10 @@ module type Intf = sig
     (** A pretty printer *)
 
     include Algo_intf.Chaikin_smoothing with type t := t
+
+    val intersects : t -> t -> ((Coord.t * Coord.t) * (Coord.t * Coord.t)) list
+    (** Similar to {! LineString.intersects} only for the exterior ring of two
+        polygons.*)
   end
 
   module MultiPolygon : sig
