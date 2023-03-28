@@ -28,6 +28,10 @@ let orient coord1 coord2 coord3 =
   else if comp > 0 then Counterclockwise
   else Collinear
 
+let euclid_distance c1 c2 =
+  let diff = sub c2 c1 |> abs in
+  Float.sqrt (Float.pow (x diff) 2. +. Float.pow (y diff) 2.)
+
 let create_point ~x ~y =
   let arr = zeros [| 2 |] in
   set arr [| 0 |] x;
@@ -35,6 +39,14 @@ let create_point ~x ~y =
   arr
 
 let create ~x ~y = create_point ~x ~y
+
+let from_length_and_angle ~length ~angle t =
+  let adj = Float.cos angle *. length in
+  let opp = Float.sin angle *. length in
+  let x' = x t in
+  let y' = y t in
+  create ~x:(x' +. opp) ~y:(y' +. adj)
+
 let to_arr = Fun.id
 
 let of_arr' arr =
@@ -62,3 +74,26 @@ let chaikin_smoothing _i (t1, t2) =
       ~y:((0.25 *. p_iy) +. (0.75 *. p_jy))
   in
   (q, r)
+
+let slope coord1 coord2 =
+  let diff = sub coord2 coord1 in
+  y diff /. x diff
+
+let angle coord1 coord2 coord3 =
+  let m1 = slope coord2 coord1 in
+  let m2 = slope coord2 coord3 in
+  Float.atan2 (Float.abs (m2 -. m1)) (1. +. (m2 *. m1))
+
+let azimuth coord1 coord2 =
+  let lng_a = x coord1 in
+  let lat_a = y coord1 in
+  let lng_b = x coord2 in
+  let lat_b = y coord2 in
+  let delta_lng = lng_a -. lng_b in
+  let s = Float.cos lat_b *. Float.sin delta_lng in
+  let c =
+    Float.cos lat_a
+    -. Float.cos lat_b
+    -. (Float.sin lat_a *. Float.cos lat_b *. Float.cos delta_lng)
+  in
+  Float.atan2 s c

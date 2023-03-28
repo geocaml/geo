@@ -29,3 +29,17 @@ let pp ppf t =
     t.max
 
 let equal t1 t2 = t1.min = t2.min && t1.max = t2.max
+
+let mid t =
+  let min_x, min_y = (fst t.min, snd t.min) in
+  let max_x, max_y = (fst t.max, snd t.max) in
+  Coord.create ~x:((min_x +. max_x) /. 2.) ~y:((min_y +. max_y) /. 2.)
+
+let lines t =
+  let min_x, min_y = (fst t.min, snd t.min) in
+  let max_x, max_y = (fst t.max, snd t.max) in
+  let coord1 = Coord.create ~x:min_x ~y:min_y in
+  let coord2 = Coord.create ~x:max_x ~y:min_y in
+  let coord3 = Coord.create ~x:max_x ~y:max_y in
+  let coord4 = Coord.create ~x:min_x ~y:max_y in
+  [| coord1; coord2; coord3; coord4 |]

@@ -1,6 +1,12 @@
 open Owl_base_dense_ndarray_d
-include Geo_intf
 module Coord = Coord
+
+module type Conv = sig
+  type t
+
+  val to_arr : t -> arr
+  val of_arr : arr -> t
+end
 
 module Point = struct
   type t = arr

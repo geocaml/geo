@@ -10,6 +10,12 @@ module Test_prim = struct
     let expect = Floatarr.create [| 2 |] 3.0 in
     Alcotest.(check arr "same ndarray" point_arr expect)
 
+  let test_azimuth () =
+    let coord1 = Coord.create ~x:0.0 ~y:0.0 in
+    let coord2 = Coord.create ~x:(-1.0) ~y:0.0 in
+    let azimuth = Coord.azimuth coord1 coord2 in
+    Alcotest.(check (float 0.2)) "same azimuth" 0. azimuth
+
   let multipoints () =
     let p1 = Coord.create ~x:1.0 ~y:3.0 in
     let p2 = Coord.create ~x:2.0 ~y:3.0 in
@@ -109,6 +115,7 @@ module Test_prim = struct
 
   let tests =
     [
+      Alcotest.test_case "coord" `Quick test_azimuth;
       Alcotest.test_case "point" `Quick creation;
       Alcotest.test_case "multipoints" `Quick multipoints;
       Alcotest.test_case "linestring" `Quick linestring;
